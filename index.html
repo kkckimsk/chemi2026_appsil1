@@ -112,7 +112,12 @@
   
   /* 모바일에서 넓게 유지해야 하는 표 */
   .wide-table {
-    min-width: 650px; 
+    min-width: 700px; 
+  }
+  
+  /* 표 안의 내용이 강제로 줄바꿈되며 레이아웃이 망가지는 것을 방지 */
+  .wide-table th, .wide-table td {
+    white-space: nowrap;
   }
 
   th, td {
@@ -166,6 +171,10 @@
 
   /* Grid Layouts for Exp 2 & 3 */
   .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start; }
+  
+  /* 그리드 자식 요소가 화면을 벗어나는 현상(Grid Blowout) 완벽 방지 */
+  .grid-2 > div { min-width: 0; } 
+  
   .cond-box { background: var(--paper-dark); padding: 15px; border: 1px dashed var(--ink); }
   .cond-box .table-wrapper { margin-bottom: 0; border: none; }
   
@@ -184,14 +193,14 @@
     }
     
     .notebook {
-      padding: 30px 20px;
+      padding: 30px 15px;
     }
 
-    h1 { font-size: 32px; }
+    h1 { font-size: 30px; }
     .subtitle { font-size: 12px; }
 
     section {
-      padding: 24px 15px 15px 15px;
+      padding: 24px 10px 15px 10px;
     }
 
     .section-title {
@@ -301,7 +310,7 @@
     </div>
 
     <div class="table-wrapper" style="max-width: 450px; margin: 0 auto; border: 1px solid var(--ink-light);">
-      <table>
+      <table style="min-width: 100%;">
         <tbody>
           <tr><td class="title-col">평균 기체 부피 (mL)</td><td><span class="calc-val" id="e1_avg_v">—</span></td></tr>
           <tr><td class="title-col">평균 몰수 (mol)</td><td><span class="calc-val" id="e1_avg_n">—</span></td></tr>
@@ -321,7 +330,7 @@
       <div class="cond-box">
         <h3 style="font-size: 14px; margin-bottom: 10px;">측정 조건 (공통)</h3>
         <div class="table-wrapper">
-          <table>
+          <table style="min-width: 100%;">
             <tr><td class="title-col">6.0M HCl 사용량(mL)</td><td><input type="number" id="e2_hcl_used" value="3.0" step="0.1"></td></tr>
             <tr><td class="title-col">대기압 (atm)</td><td><input type="number" id="e2_p" value="1.0" step="0.01"></td></tr>
             <tr><td class="title-col">온도 (°C)</td><td><input type="number" id="e2_tc" value="25.0" step="0.1"></td></tr>
@@ -405,7 +414,7 @@
     <div class="grid-2">
       <div>
         <div class="table-wrapper">
-          <table>
+          <table style="min-width: 100%;">
             <tr><td class="title-col" style="width: 50%;">미지 시료 질량 m (g)</td><td><input type="number" id="e3_m" value="0.15" step="0.01"></td></tr>
             <tr><td class="title-col">대기압 P (atm)</td><td><input type="number" id="e3_p" value="1.0" step="0.01"></td></tr>
             <tr><td class="title-col">온도 (°C)</td><td><input type="number" id="e3_tc" value="25.0" step="0.1"></td></tr>
