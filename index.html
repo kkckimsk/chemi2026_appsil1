@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>탄산염 분석 실험 통합 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a2238;
+    --ink-light: #4a5578;
+    --paper: #faf8f3;
+    --paper-dark: #f0ece1;
+    --accent: #2e6099;
+    --accent-soft: #a8c1de;
+    --red: #c84b3f;
+    --grid: #c8d3e0;
+    --good: #2d7a4f;
+    --highlight: #ffeaa7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Gowun Dodum', 'JetBrains Mono', sans-serif;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--ink);
+    padding: 40px 20px;
+    line-height: 1.6;
+  }
+
+  .notebook {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(250, 248, 243, 0.95);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 40px 50px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  header {
+    border-bottom: 2px dashed var(--ink-light);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  h1 { font-family: 'Caveat', cursive; font-size: 46px; color: var(--ink); margin-bottom: 5px; }
+  .subtitle { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--ink-light); }
+
+  section {
+    margin-bottom: 50px;
+    background: white;
+    border: 1.5px solid var(--ink);
+    padding: 24px;
+    position: relative;
+  }
+
+  .section-title {
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: var(--accent);
+    color: white;
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 2px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  th, td {
+    border: 1px solid var(--ink-light);
+    padding: 8px 10px;
+  }
+
+  th {
+    background: var(--paper-dark);
+    font-weight: bold;
+    color: var(--ink);
+    font-size: 13px;
+  }
+
+  td.title-col {
+    background: var(--paper-dark);
+    font-weight: bold;
+    text-align: left;
+    width: 25%;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    border-bottom: 2px solid var(--accent-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    color: var(--accent);
+    font-weight: 700;
+    padding: 4px;
+    transition: all 0.2s;
+  }
+
+  input[type="number"]:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+    background: rgba(46, 96, 153, 0.05);
+  }
+
+  .calc-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .highlight-row { background-color: var(--highlight) !important; transition: background-color 0.5s; }
+  .error-text { color: var(--red); font-size: 12px; }
+
+  /* Grid Layouts for Exp 2 & 3 */
+  .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start; }
+  .cond-box { background: var(--paper-dark); padding: 15px; border: 1px dashed var(--ink); }
+  .cond-box table { margin-bottom: 0; }
+  
+  /* Chart */
+  #chart { width: 100%; height: 300px; background: white; border: 1px solid var(--grid); margin-top: 15px; }
+  
+  .badge { display: inline-block; padding: 2px 6px; background: var(--accent); color: white; border-radius: 4px; font-size: 11px; }
+
+  sub { font-size: 10px; }
+  sup { font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div class="notebook">
+  <header>
+    <h1>Carbonate Analysis Lab</h1>
+    <div class="subtitle">기체 뷰렛법을 이용한 기체 상수 결정, 압축인자(Z) 및 미지 탄산염 분석 자동 계산기</div>
+  </header>
+
+  <!-- ================= 실험 1 ================= -->
+  <section>
+    <div class="section-title">실험 1. 기체상수 R 구하기</div>
+    <p style="margin-bottom: 15px; font-size: 14px; color: var(--ink-light);">
+      ※ Na<sub>2</sub>CO<sub>3</sub> 분자량 = 105.99 g/mol. 파란색 밑줄 친 칸에 <strong>측정 데이터</strong>를 입력하면 결과가 자동 계산됩니다.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th class="title-col">항목</th>
+          <th>실험 1</th>
+          <th>실험 2</th>
+          <th>실험 3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="title-col">시료 질량 (g)</td>
+          <td><input type="number" id="e1_m1" value="0.20" step="0.01"></td>
+          <td><input type="number" id="e1_m2" value="0.20" step="0.01"></td>
+          <td><input type="number" id="e1_m3" value="0.20" step="0.01"></td>
+        </tr>
+        <tr>
+          <td class="title-col">대기압 (atm)</td>
+          <td><input type="number" id="e1_p1" value="1.0" step="0.01"></td>
+          <td><input type="number" id="e1_p2" value="1.0" step="0.01"></td>
+          <td><input type="number" id="e1_p3" value="1.0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td class="title-col">온도 (°C)</td>
+          <td><input type="number" id="e1_tc1" value="25.0" step="0.1"></td>
+          <td><input type="number" id="e1_tc2" value="25.0" step="0.1"></td>
+          <td><input type="number" id="e1_tc3" value="25.0" step="0.1"></td>
+        </tr>
+        <tr style="background: rgba(0,0,0,0.02)">
+          <td class="title-col">온도 (K)</td>
+          <td><span class="calc-val" id="e1_tk1">—</span></td>
+          <td><span class="calc-val" id="e1_tk2">—</span></td>
+          <td><span class="calc-val" id="e1_tk3">—</span></td>
+        </tr>
+        <tr>
+          <td class="title-col">기체 부피 측정값 (mL)</td>
+          <td><input type="number" id="e1_v1" placeholder="예: 45.2"></td>
+          <td><input type="number" id="e1_v2" placeholder="예: 44.8"></td>
+          <td><input type="number" id="e1_v3" placeholder="예: 45.5"></td>
+        </tr>
+        <tr style="background: rgba(0,0,0,0.02)">
+          <td class="title-col">기체 부피 (L)</td>
+          <td><span class="calc-val" id="e1_vl1">—</span></td>
+          <td><span class="calc-val" id="e1_vl2">—</span></td>
+          <td><span class="calc-val" id="e1_vl3">—</span></td>
+        </tr>
+        <tr style="background: rgba(0,0,0,0.02)">
+          <td class="title-col">CO<sub>2</sub> 몰수 n (mol)</td>
+          <td><span class="calc-val" id="e1_n1">—</span></td>
+          <td><span class="calc-val" id="e1_n2">—</span></td>
+          <td><span class="calc-val" id="e1_n3">—</span></td>
+        </tr>
+        <tr style="background: var(--paper-dark)">
+          <td class="title-col" style="color:var(--accent)">계산된 기체 상수 (R<sub>real</sub>)</td>
+          <td><span class="calc-val" id="e1_r1" style="color:var(--accent)">—</span></td>
+          <td><span class="calc-val" id="e1_r2" style="color:var(--accent)">—</span></td>
+          <td><span class="calc-val" id="e1_r3" style="color:var(--accent)">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="width: 50%; margin: 0 auto;">
+      <tbody>
+        <tr><td class="title-col">평균 기체 부피 (mL)</td><td><span class="calc-val" id="e1_avg_v">—</span></td></tr>
+        <tr><td class="title-col">평균 몰수 (mol)</td><td><span class="calc-val" id="e1_avg_n">—</span></td></tr>
+        <tr><td class="title-col" style="color:var(--red)">평균 R<sub>real</sub> (L·atm/mol·K)</td><td><span class="calc-val" id="e1_avg_r" style="color:var(--red); font-size:18px">—</span></td></tr>
+        <tr><td class="title-col">표준편차 (R)</td><td><span class="calc-val" id="e1_std_r">—</span></td></tr>
+        <tr><td class="title-col">R<sub>ideal</sub> (이론값)</td><td class="calc-val">0.08206</td></tr>
+        <tr><td class="title-col">상대오차 (%)</td><td><span class="calc-val" id="e1_err_r">—</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================= 실험 2 ================= -->
+  <section>
+    <div class="section-title">실험 2. 압축 인자 Z의 실험적 결정</div>
+    <div class="grid-2">
+      <div class="cond-box">
+        <h3 style="font-size: 14px; margin-bottom: 10px;">측정 조건 (공통)</h3>
+        <table>
+          <tr><td class="title-col">6.0M HCl 사용량(mL)</td><td><input type="number" id="e2_hcl_used" value="3.0" step="0.1"></td></tr>
+          <tr><td class="title-col">대기압 (atm)</td><td><input type="number" id="e2_p" value="1.0" step="0.01"></td></tr>
+          <tr><td class="title-col">온도 (°C)</td><td><input type="number" id="e2_tc" value="25.0" step="0.1"></td></tr>
+          <tr><td class="title-col">온도 (K)</td><td><span class="calc-val" id="e2_tk">—</span></td></tr>
+          <tr><td class="title-col">R<sub>ideal</sub></td><td class="calc-val">0.08206</td></tr>
+        </table>
+        
+        <div style="margin-top: 20px; padding: 15px; background: white; border: 2px solid var(--accent);">
+          <div style="font-size: 12px; color: var(--ink-light); margin-bottom: 5px;">회귀 분석 결과 (Z)</div>
+          <div style="font-size: 32px; font-family: 'JetBrains Mono'; font-weight: bold; color: var(--accent); line-height: 1;" id="e2_z_result">—</div>
+          <div style="font-size: 12px; margin-top: 5px;" id="e2_r2_result">R<sup>2</sup> = —</div>
+        </div>
+      </div>
+      
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>회차</th>
+              <th>Na<sub>2</sub>CO<sub>3</sub> 질량(g)</th>
+              <th style="color: var(--red);">최소 필요 6M HCl(mL)</th>
+              <th>예상 몰수(mol)</th>
+              <th>V<sub>ideal</sub> (mL)</th>
+              <th>V<sub>real</sub> 측정(mL)</th>
+              <th>V<sub>real</sub> / V<sub>ideal</sub></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><input type="number" id="e2_m1" value="0.08" step="0.01"></td>
+              <td><span class="calc-val" style="color: var(--red);" id="e2_hcl1">—</span></td>
+              <td><span class="calc-val" id="e2_n1">—</span></td>
+              <td><span class="calc-val" id="e2_vi1">—</span></td>
+              <td><input type="number" id="e2_vr1" placeholder="예: 18.0"></td>
+              <td><span class="calc-val" id="e2_ratio1">—</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><input type="number" id="e2_m2" value="0.10" step="0.01"></td>
+              <td><span class="calc-val" style="color: var(--red);" id="e2_hcl2">—</span></td>
+              <td><span class="calc-val" id="e2_n2">—</span></td>
+              <td><span class="calc-val" id="e2_vi2">—</span></td>
+              <td><input type="number" id="e2_vr2" placeholder="예: 22.5"></td>
+              <td><span class="calc-val" id="e2_ratio2">—</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><input type="number" id="e2_m3" value="0.12" step="0.01"></td>
+              <td><span class="calc-val" style="color: var(--red);" id="e2_hcl3">—</span></td>
+              <td><span class="calc-val" id="e2_n3">—</span></td>
+              <td><span class="calc-val" id="e2_vi3">—</span></td>
+              <td><input type="number" id="e2_vr3" placeholder="예: 27.1"></td>
+              <td><span class="calc-val" id="e2_ratio3">—</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><input type="number" id="e2_m4" value="0.14" step="0.01"></td>
+              <td><span class="calc-val" style="color: var(--red);" id="e2_hcl4">—</span></td>
+              <td><span class="calc-val" id="e2_n4">—</span></td>
+              <td><span class="calc-val" id="e2_vi4">—</span></td>
+              <td><input type="number" id="e2_vr4" placeholder="예: 31.6"></td>
+              <td><span class="calc-val" id="e2_ratio4">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size: 11px; color: var(--ink-light); margin-bottom: 10px; text-align: right;">
+          * 최소 필요 6M HCl 부피 = (Na<sub>2</sub>CO<sub>3</sub> 몰수 × 2) / 6M × 1000
+        </div>
+        <svg id="chart" viewBox="0 0 600 300"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 실험 3 ================= -->
+  <section>
+    <div class="section-title">실험 3. 미지 탄산염 분자량 구하기</div>
+    <div class="grid-2">
+      <div>
+        <table style="margin-bottom: 10px;">
+          <tr><td class="title-col" style="width: 50%;">미지 시료 질량 m (g)</td><td><input type="number" id="e3_m" value="0.15" step="0.01"></td></tr>
+          <tr><td class="title-col">대기압 P (atm)</td><td><input type="number" id="e3_p" value="1.0" step="0.01"></td></tr>
+          <tr><td class="title-col">온도 (°C)</td><td><input type="number" id="e3_tc" value="25.0" step="0.1"></td></tr>
+          <tr><td class="title-col">측정 부피 V<sub>real</sub> (mL)</td><td><input type="number" id="e3_vr" placeholder="예: 34.5"></td></tr>
+          <tr><td class="title-col">실험2 압축인자 Z</td><td><input type="number" id="e3_z" placeholder="실험2 자동연동"></td></tr>
+        </table>
+        <div style="font-size: 11px; color: var(--ink-light); text-align: right;">* 온도는 내부적으로 K로 변환되어 계산됩니다.</div>
+      </div>
+      <div>
+        <table>
+          <tr>
+            <th style="width: 50%;">보정 전 (Ideal, Z=1)</th>
+            <th>보정 후 (Real, Z반영)</th>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-size: 11px; margin-bottom: 4px;">n = PV / R<sub>ideal</sub>T</div>
+              몰수: <span class="calc-val" id="e3_ni">—</span> mol
+            </td>
+            <td>
+              <div style="font-size: 11px; margin-bottom: 4px;">n = PV / ZR<sub>ideal</sub>T</div>
+              몰수: <span class="calc-val" id="e3_nr">—</span> mol
+            </td>
+          </tr>
+          <tr>
+            <td style="background: var(--paper-dark)">
+              <div style="font-size: 11px; margin-bottom: 4px;">M<sub>ideal</sub> = m / n</div>
+              분자량: <span class="calc-val" id="e3_mi" style="font-size:18px; color:var(--ink)">—</span>
+            </td>
+            <td style="background: rgba(46, 96, 153, 0.1)">
+              <div style="font-size: 11px; margin-bottom: 4px;">M<sub>real</sub> = m / n</div>
+              분자량: <span class="calc-val" id="e3_mr" style="font-size:18px; color:var(--accent); font-weight:bold">—</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+const R_IDEAL = 0.08206;
+const MW_NA2CO3 = 105.99;
+
+function val(id) { return parseFloat(document.getElementById(id).value); }
+function setTxt(id, txt) { document.getElementById(id).textContent = txt; }
+function fmt(num, decimals=4) { return isNaN(num) ? '—' : num.toFixed(decimals); }
+
+// ================= 실험 1 로직 =================
+function updateExp1() {
+  let rs = [], vs = [], ns = [];
+  for(let i=1; i<=3; i++) {
+    let m = val('e1_m'+i), p = val('e1_p'+i), tc = val('e1_tc'+i), v_ml = val('e1_v'+i);
+    let tk = tc + 273.15;
+    setTxt('e1_tk'+i, fmt(tk, 2));
+    
+    if(!isNaN(m) && !isNaN(p) && !isNaN(v_ml)) {
+      let vl = v_ml / 1000;
+      let n = m / MW_NA2CO3;
+      let r = (p * vl) / (n * tk);
+      
+      setTxt('e1_vl'+i, fmt(vl, 5));
+      setTxt('e1_n'+i, fmt(n, 5));
+      setTxt('e1_r'+i, fmt(r, 5));
+      
+      rs.push(r); vs.push(v_ml); ns.push(n);
+    } else {
+      setTxt('e1_vl'+i, '—'); setTxt('e1_n'+i, '—'); setTxt('e1_r'+i, '—');
+    }
+  }
+
+  if(rs.length > 0) {
+    let avgV = vs.reduce((a,b)=>a+b,0)/vs.length;
+    let avgN = ns.reduce((a,b)=>a+b,0)/ns.length;
+    let avgR = rs.reduce((a,b)=>a+b,0)/rs.length;
+    
+    let variance = rs.reduce((a,b)=>a + Math.pow(b - avgR, 2), 0) / (rs.length > 1 ? rs.length - 1 : 1);
+    let stdR = rs.length > 1 ? Math.sqrt(variance) : 0;
+    let errR = Math.abs(avgR - R_IDEAL) / R_IDEAL * 100;
+
+    setTxt('e1_avg_v', fmt(avgV, 2));
+    setTxt('e1_avg_n', fmt(avgN, 5));
+    setTxt('e1_avg_r', fmt(avgR, 5));
+    setTxt('e1_std_r', fmt(stdR, 6));
+    setTxt('e1_err_r', fmt(errR, 2) + ' %');
+  } else {
+    setTxt('e1_avg_v', '—'); setTxt('e1_avg_n', '—'); setTxt('e1_avg_r', '—');
+    setTxt('e1_std_r', '—'); setTxt('e1_err_r', '—');
+  }
+}
+
+// ================= 실험 2 로직 =================
+let exp2_Z = null;
+
+function updateExp2() {
+  let p = val('e2_p'), tc = val('e2_tc');
+  let tk = tc + 273.15;
+  setTxt('e2_tk', isNaN(tk) ? '—' : fmt(tk, 2));
+
+  let dataPoints = [];
+  
+  for(let i=1; i<=4; i++) {
+    let m = val('e2_m'+i);
+    let vr = val('e2_vr'+i);
+    
+    if(!isNaN(m) && !isNaN(p) && !isNaN(tk)) {
+      let n = m / MW_NA2CO3;
+      let vi = (n * R_IDEAL * tk / p) * 1000; // mL
+      
+      // 반응식: Na2CO3 + 2HCl -> 2NaCl + H2O + CO2
+      // 6M HCl 필요 부피 (mL) = (n * 2) / 6 * 1000
+      let v_hcl = (n * 2 / 6) * 1000;
+      
+      setTxt('e2_n'+i, fmt(n, 5));
+      setTxt('e2_hcl'+i, fmt(v_hcl, 2));
+      setTxt('e2_vi'+i, fmt(vi, 2));
+      
+      if(!isNaN(vr)) {
+        setTxt('e2_ratio'+i, fmt(vr / vi, 3));
+        dataPoints.push({x: vi, y: vr});
+      } else {
+        setTxt('e2_ratio'+i, '—');
+      }
+    } else {
+      setTxt('e2_n'+i, '—'); setTxt('e2_hcl'+i, '—'); setTxt('e2_vi'+i, '—'); setTxt('e2_ratio'+i, '—');
+    }
+  }
+
+  // Regression y = Z*x
+  if(dataPoints.length > 1) {
+    let sumXY = 0, sumXX = 0, sumY = 0;
+    dataPoints.forEach(p => { sumXY += p.x * p.y; sumXX += p.x * p.x; sumY += p.y; });
+    
+    exp2_Z = sumXY / sumXX;
+    let meanY = sumY / dataPoints.length;
+    
+    let ssRes = 0, ssTot = 0;
+    dataPoints.forEach(p => {
+      let yhat = exp2_Z * p.x;
+      ssRes += Math.pow(p.y - yhat, 2);
+      ssTot += Math.pow(p.y - meanY, 2);
+    });
+    let r2 = ssTot > 0 ? 1 - (ssRes/ssTot) : 1;
+
+    setTxt('e2_z_result', fmt(exp2_Z, 4));
+    setTxt('e2_r2_result', `R² = ${fmt(r2, 4)}`);
+    
+    // Auto-fill Exp3 Z if user hasn't typed manually recently
+    if(document.activeElement.id !== 'e3_z') {
+      document.getElementById('e3_z').value = fmt(exp2_Z, 4);
+    }
+  } else {
+    exp2_Z = null;
+    setTxt('e2_z_result', '—');
+    setTxt('e2_r2_result', '데이터 2개 이상 필요');
+  }
+  
+  drawExp2Chart(dataPoints, exp2_Z);
+}
+
+function drawExp2Chart(pts, Z) {
+  const svg = document.getElementById('chart');
+  if(pts.length === 0) { svg.innerHTML = ''; return; }
+  
+  let maxX = Math.max(...pts.map(p=>p.x), 10) * 1.2;
+  let maxY = Math.max(...pts.map(p=>p.y), 10) * 1.2;
+  let maxV = Math.max(maxX, maxY);
+  
+  let w = 600, h = 300;
+  let pad = 40;
+  let sx = x => pad + (x / maxV) * (w - pad*2);
+  let sy = y => h - pad - (y / maxV) * (h - pad*2);
+  
+  let html = `<line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#1a2238" stroke-width="2"/>`;
+  html += `<line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="#1a2238" stroke-width="2"/>`;
+  
+  // ideal line (Z=1)
+  html += `<line x1="${sx(0)}" y1="${sy(0)}" x2="${sx(maxV)}" y2="${sy(maxV)}" stroke="#a8c1de" stroke-width="2" stroke-dasharray="5,5"/>`;
+  
+  // real line (Z)
+  if(Z) {
+    let endX = maxV, endY = Z * maxV;
+    if(endY > maxV) { endY = maxV; endX = maxV / Z; }
+    html += `<line x1="${sx(0)}" y1="${sy(0)}" x2="${sx(endX)}" y2="${sy(endY)}" stroke="#2e6099" stroke-width="3"/>`;
+  }
+  
+  pts.forEach((p, i) => {
+    html += `<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="5" fill="#c84b3f" stroke="white" stroke-width="1.5"/>`;
+    html += `<text x="${sx(p.x)+8}" y="${sy(p.y)+4}" font-size="12" font-family="JetBrains Mono">#${i+1}</text>`;
+  });
+  
+  svg.innerHTML = html;
+}
+
+// ================= 실험 3 로직 =================
+function updateExp3() {
+  let m = val('e3_m'), p = val('e3_p'), tc = val('e3_tc'), vr = val('e3_vr'), z = val('e3_z');
+  let tk = tc + 273.15;
+
+  if(!isNaN(m) && !isNaN(p) && !isNaN(tk) && !isNaN(vr)) {
+    let vl = vr / 1000;
+    
+    // Z=1 (ideal)
+    let ni = (p * vl) / (R_IDEAL * tk);
+    let mi = m / ni;
+    setTxt('e3_ni', fmt(ni, 5));
+    setTxt('e3_mi', fmt(mi, 2));
+    
+    if(!isNaN(z) && z > 0) {
+      let nr = (p * vl) / (z * R_IDEAL * tk);
+      let mr = m / nr;
+      setTxt('e3_nr', fmt(nr, 5));
+      setTxt('e3_mr', fmt(mr, 2));
+    } else {
+      setTxt('e3_nr', '—'); setTxt('e3_mr', '—');
+    }
+  } else {
+    setTxt('e3_ni', '—'); setTxt('e3_mi', '—');
+    setTxt('e3_nr', '—'); setTxt('e3_mr', '—');
+  }
+}
+
+// Event Listeners
+document.addEventListener('input', () => {
+  updateExp1();
+  updateExp2();
+  updateExp3();
+});
+
+// Init
+updateExp1();
+updateExp2();
+updateExp3();
+
+</script>
+</body>
+</html>
